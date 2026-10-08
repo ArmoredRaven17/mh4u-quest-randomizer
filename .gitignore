@@ -1,0 +1,23 @@
+*.log
+Thumbs.db
+.DS_Store
+__pycache__/
+
+# Game dumps / extracted game files — never redistribute these. Keep the extract outside the
+# repo; only the generated docs/data.js and the icons under docs/assets/ are committed.
+*.3ds
+*.cci
+*.cia
+*.arc
+*.tex
+*.bin
+romfs/
+exefs/
+arcx/
+# ARC entries as the extract's arc4.py writes them: quest files, LMD text, textures
+*.1bbfd18e
+*.62440501
+*.241f5deb
+
+# Visual Studio local IDE state
+.vs/

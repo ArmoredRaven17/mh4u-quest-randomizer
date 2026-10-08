@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache">
+<title>MH4U Quest Randomizer</title>
+<link rel="icon" href="assets/MonsterIcons/MH4U-Question_Mark_Icon.png">
+<!-- Bump ?v= on any styles/app/card/data change so browsers fetch fresh copies (no hard-refresh needed) -->
+<link rel="stylesheet" href="styles.css?v=4">
+</head>
+<body>
+<div id="app">
+  <header class="titlebar titlebar-header">
+    <img id="titleIcon" class="title-icon" src="assets/MonsterIcons/MH4U-Question_Mark_Icon.png" alt="">
+    <h1>MH4U Quest Randomizer</h1>
+    <button id="helpBtn" class="icon-btn" title="Help" aria-label="Help">?</button>
+    <button id="linksBtn" class="icon-btn" title="Other MH4U apps" aria-label="Other MH4U apps">&#128279;</button>
+    <button id="aboutBtn" class="icon-btn" title="About / Attributions" aria-label="About">&#9432;</button>
+    <button id="themeBtn" class="icon-btn" title="Theme" aria-label="Theme">&#9881;</button>
+    <button id="streamViewBtn" class="icon-btn" title="Pop Out Result Card for Stream" aria-label="Pop Out for Stream">&#8599;</button>
+  </header>
+
+  <main class="layout">
+    <!-- Sidebar: filters -->
+    <aside class="sidebar">
+      <button id="resetBtn" class="btn block">Reset Filters</button>
+      <div class="row gap">
+        <button id="exportBtn" class="btn tiny" style="flex:1">Export</button>
+        <button id="importBtn" class="btn tiny" style="flex:1">Import</button>
+        <input type="file" id="importFile" accept=".json" hidden>
+      </div>
+
+      <section class="panel" data-open="false">
+        <button class="panel-head">Quest Filters <span class="chev">&#9662;</span></button>
+        <div class="panel-body">
+          <p class="hint">Uncheck to exclude from pool</p>
+          <label class="chk"><input type="checkbox" id="f_keysOnly">Keys Only?</label>
+          <label class="chk"><input type="checkbox" id="f_urgent" checked>Urgent Quests</label>
+          <label class="chk"><input type="checkbox" id="f_large" checked>Large Monsters</label>
+          <div class="sub-toggles">
+            <label class="chk"><input type="checkbox" id="f_capture" checked>Capture</label>
+            <label class="chk"><input type="checkbox" id="f_multi" checked>Multi Monster</label>
+            <label class="chk"><input type="checkbox" id="f_repel" checked>Repel</label>
+            <label class="chk"><input type="checkbox" id="f_frenzy" checked>Frenzy</label>
+            <label class="chk"><input type="checkbox" id="f_apex" checked>Apex</label>
+          </div>
+          <label class="chk"><input type="checkbox" id="f_small" checked>Small Monsters</label>
+          <label class="chk"><input type="checkbox" id="f_delivery" checked>Delivery</label>
+          <label class="chk"><input type="checkbox" id="f_harvest" checked>Harvest Tours</label>
+          <p class="hint" style="margin-top:6px">Quest Type Filters</p>
+          <div class="row gap">
+            <button id="allExpand" class="btn tiny">Expand All</button>
+            <button id="allCollapse" class="btn tiny">Collapse All</button>
+          </div>
+          <div id="allTypeTree" class="tree"></div>
+        </div>
+      </section>
+
+      <section class="panel" data-open="false">
+        <button class="panel-head">Monsters <span class="chev">&#9662;</span></button>
+        <div class="panel-body">
+          <p class="hint">Uncheck to exclude every quest that targets it</p>
+          <div class="row gap">
+            <button id="monExpand" class="btn tiny">Expand All</button>
+            <button id="monCollapse" class="btn tiny">Collapse All</button>
+          </div>
+          <div id="monsterTree" class="tree"></div>
+        </div>
+      </section>
+
+      <section class="panel" data-open="false">
+        <button class="panel-head">Weapons <span class="chev">&#9662;</span></button>
+        <div class="panel-body">
+          <p class="hint">Uncheck to exclude from pool</p>
+          <div id="weaponList"></div>
+        </div>
+      </section>
+
+      <section class="panel" data-open="false">
+        <button class="panel-head">Challenges <span class="chev">&#9662;</span></button>
+        <div class="panel-body">
+          <p class="hint">Custom conditions rolled with each quest</p>
+          <label class="chk"><input type="checkbox" id="chChaosMode">Chaos Mode</label>
+          <div class="ch-add">
+            <input type="text" id="chText" placeholder="Condition name" maxlength="21">
+            <input type="number" id="chChance" value="10" min="1" max="100"> %
+            <button id="chAdd" class="btn tiny">Add</button>
+          </div>
+          <div class="row gap ch-count">
+            <span>Roll up to</span>
+            <input type="number" id="challengeCount" value="1" min="1" max="8">
+            <span>condition(s) per quest</span>
+          </div>
+          <div id="chList" class="bl-list"></div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Result -->
+    <section class="content" id="content">
+      <div class="quest-pickers">
+        <label class="field">Quest Type
+          <select id="questType">
+            <option selected>ALL</option>
+            <option>Caravan</option><option>Gathering Hall</option><option>Arena</option>
+          </select>
+        </label>
+        <label class="field">From Level
+          <select id="fromLevel"></select>
+        </label>
+        <label class="field">Up to Level
+          <select id="toLevel"></select>
+        </label>
+        <button id="rollBtn" class="btn accent" disabled>Randomize!</button>
+      </div>
+      <p id="poolCount" class="pool-count"></p>
+
+      <div class="result-card-wrap">
+        <div id="card" class="result-card"></div>
+        <div class="rc-footer">
+          <button id="copyResultBtn" class="btn accent tiny" disabled>Copy to Clipboard</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Help dialog -->
+<div id="helpModal" class="modal hidden">
+  <div class="modal-card">
+    <h2>How to use</h2>
+    <p><strong>1. Pick a quest type &amp; level.</strong> Choose Caravan, Gathering Hall, Arena or ALL, then a From / Up to Level range. In ALL the range runs Caravan 1★ → Gathering Hall G3★ → Arena G3★.</p>
+    <p><strong>2. Narrow the pool with the sidebar filters:</strong></p>
+    <ul>
+      <li><strong>Quest Filters</strong> — uncheck a category to drop every quest in it. Capture, Multi Monster, Repel, Frenzy and Apex sit under Large Monsters and go with it. <strong>Keys Only?</strong> keeps just the quests the game marks as Key. Quest Type Filters switch individual stars off everywhere (Arena is off to start with).</li>
+      <li><strong>Monsters</strong> — uncheck a monster to drop every quest that targets it.</li>
+      <li><strong>Weapons</strong> — uncheck a weapon class to stop it being rolled.</li>
+      <li><strong>Challenges</strong> — add your own conditions (e.g. "No Armor"), each with a chance %, that roll alongside the quest. Set how many can apply per quest, and toggle each one on/off. <strong>Chaos Mode</strong> hands the on/off decision to the RNG each roll.</li>
+    </ul>
+    <p><strong>3. Hit Randomize.</strong> You get a quest and a weapon class, plus any challenges that rolled. Arena quests give you one of the quest's five loaner sets instead, since that's what you fight in.</p>
+    <p>Quest badges: <span class="pill pill-urgent">Urgent</span> <span class="pill pill-key">Key</span> <span class="pill pill-hunt">Hunt</span> <span class="pill pill-capture">Capture</span> <span class="pill pill-repel">Repel</span> <span class="pill pill-sm">Small Monsters</span> <span class="pill pill-gathering">Delivery</span> <span class="pill pill-egg">Harvest Tour</span> <span class="pill pill-frenzy">Frenzy</span> <span class="pill pill-apex">Apex</span> <span class="pill pill-arena">Arena</span></p>
+    <p><strong>&#9881; Theme</strong> — change the color theme, put one of the game's Guild Card backgrounds behind the card, or a flat blue/green for chroma-keying.</p>
+    <p><strong>&#8599; Stream view</strong> — pops the result card out into its own window on a green background, updating with every roll, for capturing in OBS.</p>
+    <p><strong>Export / Import</strong> — save your filters and challenges to a file, or load them back.</p>
+    <p class="muted">Filters, challenges and theme are saved between visits. Reset Filters restores the defaults and keeps your challenges.</p>
+    <div class="row end gap"><button id="helpClose" class="btn">Close</button></div>
+  </div>
+</div>
+
+<!-- Reset Filters confirmation -->
+<div id="resetConfirmModal" class="modal hidden">
+  <div class="modal-card narrow">
+    <h2>Reset Filters?</h2>
+    <p>Quest filters, levels, monsters and weapons go back to their defaults. Your challenges are kept.</p>
+    <div class="row end gap">
+      <button id="resetConfirmCancel" class="btn">Cancel</button>
+      <button id="resetConfirmOk" class="btn accent">Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- Other MH4U apps dialog -->
+<div id="linksModal" class="modal hidden">
+  <div class="modal-card">
+    <h2>Other MH4U Apps</h2>
+    <p class="muted">For Non-MH4U Apps, you can visit the <a href="https://armoredraven17.github.io/" target="_blank" rel="noopener">Home Page</a></p>
+    <ul class="app-links">
+      <!-- every MH4U app, in the hub's order (apps.js); this app's own row is the "you are here" one -->
+      <li>
+        <a href="https://armoredraven17.github.io/mh4u-collection-tracker/" target="_blank" rel="noopener">Collection Tracker</a>
+        <span class="app-desc">Tracks which MH4U weapons and armor you own, and what it costs to finish them.</span>
+      </li>
+      <li>
+        <a href="https://armoredraven17.github.io/mh4u-weapon-trees/" target="_blank" rel="noopener">Weapon Trees</a>
+        <span class="app-desc">Browse every MH4U weapon upgrade tree, with full stats on any node you click.</span>
+      </li>
+      <li>
+        <a href="https://armoredraven17.github.io/mh4u-hunting-log/" target="_blank" rel="noopener">Hunting Log</a>
+        <span class="app-desc">Keeps a running record of your MH4U hunts — what you were after, what you wore, who came along.</span>
+      </li>
+      <li class="current">
+        <span class="app-name">Quest Randomizer <span class="app-here">you are here</span></span>
+        <span class="app-desc">Rolls a random MH4U quest and weapon when you can't decide what to hunt.</span>
+      </li>
+    </ul>
+    <div class="row end gap"><button id="linksClose" class="btn">Close</button></div>
+  </div>
+</div>
+
+<!-- About dialog -->
+<div id="aboutModal" class="modal hidden">
+  <div class="modal-card">
+    <h2>MH4U Quest Randomizer</h2>
+    <p class="muted">An unofficial, non-commercial quest randomizer for Monster Hunter 4 Ultimate — it rolls a quest and
+      a weapon for when you can't decide what to hunt. Not affiliated with, endorsed by, or supported by Capcom.</p>
+    <hr class="modal-divider">
+    <p class="muted">Every quest — its name, star, locale, objective and monsters — and every Arena loaner set is read
+      from the game's own quest files, and the monster, quest and weapon icons and the Guild Card backgrounds are
+      the game's own (the collaboration backgrounds' marks belong to their owners). Everything was
+      extracted from a personally owned copy of the game; no game files are redistributed. Downloadable Event and
+      Challenge Quests aren't on the cartridge, so they aren't in the pool, and Guild Quests are built by the game
+      at run time, so they aren't either. The monster classes in the Monsters filter are assigned by hand, under
+      the game's own class names.</p>
+    <p class="muted">Monster Hunter 4 Ultimate and all of its names, data and icons are &copy; CAPCOM CO., LTD.
+      The UI textures and the MHFU font are shared with the same author's MHGU fan apps, and the app itself is a
+      port of the <a href="https://armoredraven17.github.io/mh3u-quest-randomizer/" target="_blank" rel="noopener">MH3U Quest Randomizer</a>,
+      itself a port of the <a href="https://armoredraven17.github.io/MHGU-Quest-Randomizer/" target="_blank" rel="noopener">MHGU Quest Randomizer</a>.</p>
+    <p class="muted">Built with substantial help from <a href="https://claude.com/claude-code" target="_blank" rel="noopener">Claude Code</a>,
+      Anthropic's AI coding tool, directed and reviewed by the author.</p>
+    <div class="row end gap"><button id="aboutClose" class="btn">Close</button></div>
+  </div>
+</div>
+
+<!-- Theme dialog -->
+<div id="themeModal" class="modal hidden">
+  <div class="modal-card">
+    <h2>Theme</h2>
+    <div id="swatches" class="swatches"></div>
+    <hr class="modal-divider">
+    <p class="bg-title">Content Background</p>
+    <div id="bgGrid" class="bg-grid"></div>
+    <div class="row end gap"><button id="themeClose" class="btn">Close</button></div>
+  </div>
+</div>
+
+<script src="data.js?v=5"></script>
+<script src="card.js?v=1"></script>
+<script src="app.js?v=4"></script>
+</body>
+</html>

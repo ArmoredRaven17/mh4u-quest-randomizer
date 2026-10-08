@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache">
+<title>MH4U Quest Randomizer — Stream View</title>
+<link rel="icon" href="assets/MonsterIcons/MH4U-Question_Mark_Icon.png">
+<link rel="stylesheet" href="styles.css?v=4">
+<style>
+  /* Just enough page chrome to centre the card, which keeps its own styles.css look. The
+     background is chroma-key green so OBS can key out everything but the card. */
+  html,body{height:100%;background:#00FF00;overflow:auto}
+  body{display:flex;align-items:center;justify-content:center;padding:12px}
+  .result-card{width:100%;max-width:640px}
+</style>
+</head>
+<body>
+<div id="card" class="result-card"></div>
+<script src="card.js?v=1"></script>
+<script src="stream-view.js?v=1"></script>
+</body>
+</html>
